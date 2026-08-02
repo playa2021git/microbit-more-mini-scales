@@ -1,5 +1,5 @@
 /**
- * Microbit More + M5Stack Unit Mini Scales + NeoPixel ブリッジ
+ * Microbit More + M5Stack Unit Mini Scales + WS2812/NeoPixel ブリッジ
  *
  * Mini Scalesから取得した重量を、Microbit Moreのラベル付き数値として
  * Stretch3へ送信します。
@@ -7,55 +7,32 @@
  * Stretch3側の通信仕様：
  * - ラベル「weight」：現在の重量（整数g）
  * - ラベル「cmd」に文字列「tare」を送信：風袋引きを実行
- * - ラベル「leds」に数値を送信：NeoPixelを先頭から指定個数点灯
+ * - ラベル「leds」に数値を送信：LEDを先頭から指定個数点灯
  * - ラベル「status」：風袋引き完了時に「tared」を返す
  */
 
-// NeoPixelの設定
-// Grove ShieldのP0/P14端子では、NeoPixelの信号線としてP0を使用する
+// Grove ShieldのP0/P14端子では、LEDテープの信号線としてP0を使用する
 const LED_PIN = DigitalPin.P0
 const LED_COUNT = 30
+
+// 0～255。USB給電への負荷を抑えるため約10％の明るさにする
 const LED_BRIGHTNESS = 25
 
-// P0に接続した30個のRGB NeoPixelを初期化する
-let strip = neopixel.create(LED_PIN, LED_COUNT, NeoPixelMode.RGB)
-
-// USB給電への負荷を抑えるため、明るさを約10％に制限する
-strip.setBrightness(LED_BRIGHTNESS)
-strip.clear()
-strip.show()
-
 /**
- * Stretch3から指定された個数だけNeoPixelを点灯する。
- *
- * @param requestedCount Stretch3から受信した点灯数
+ * Stretch3から指定された個数だけLEDを点灯する。
+ * 個数はドライバ側で0～30に制限される。
  */
 function updateNeoPixels(requestedCount: number): void {
-    // 小数を切り捨て、0～30の範囲へ制限する
-    let ledCount = Math.floor(requestedCount)
-
-    if (ledCount < 0) {
-        ledCount = 0
-    }
-
-    if (ledCount > LED_COUNT) {
-        ledCount = LED_COUNT
-    }
-
-    // 一度すべて消灯する
-    strip.clear()
-
-    // LEDテープの先頭から指定個数を緑色に設定する
-    for (let index = 0; index < ledCount; index++) {
-        strip.setPixelColor(
-            index,
-            neopixel.colors(NeoPixelColors.Green)
-        )
-    }
-
-    // 設定した内容をLEDテープへ送信する
-    strip.show()
+    ws2812Compatible.showGreenBar(
+        LED_PIN,
+        requestedCount,
+        LED_COUNT,
+        LED_BRIGHTNESS
+    )
 }
+
+// 起動時は全消灯する
+updateNeoPixels(0)
 
 // Microbit MoreのBluetooth／USBシリアル通信サービスを開始する
 MbitMore.startService()
