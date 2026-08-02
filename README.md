@@ -1,13 +1,13 @@
 # Microbit More Mini Scales
 
-M5Stack Unit Mini ScalesとNeoPixel LEDを、BBC micro:bit V2とMicrobit Moreを経由してStretch3から利用するためのブリッジ用MakeCodeプロジェクトです。
+M5Stack Unit Mini ScalesとWS2812/NeoPixel LEDを、BBC micro:bit V2とMicrobit Moreを経由してStretch3から利用するためのブリッジ用MakeCodeプロジェクトです。
 
 ## 構成
 
 - BBC micro:bit V2
 - Seeed Studio Grove Shield for micro:bit v2.0
 - M5Stack Unit Mini Scales
-- Groveコネクタ対応NeoPixel 30LED
+- Groveコネクタ対応WS2812/NeoPixel 30LED
 - Stretch3
 - Microbit More
 
@@ -16,11 +16,11 @@ M5Stack Unit Mini ScalesとNeoPixel LEDを、BBC micro:bit V2とMicrobit Moreを
 | 機器 | Grove Shieldの端子 |
 |---|---|
 | M5Stack Unit Mini Scales | I2C端子 |
-| NeoPixel 30LED | P0/P14端子 |
+| WS2812/NeoPixel 30LED | P0/P14端子 |
 
-NeoPixelの信号線にはP0を使用します。P14はこのプログラムでは使用しません。
+LEDテープの信号線にはP0を使用します。P14はこのプログラムでは使用しません。
 
-> Mini ScalesとNeoPixelには安定した給電が必要です。このプログラムではNeoPixelの明るさを25/255（約10％）に制限しています。
+> Mini ScalesとLEDテープには安定した給電が必要です。このプログラムでは緑色の明るさを25/255（約10％）に制限しています。
 
 ## MakeCodeへの読み込み
 
@@ -35,7 +35,13 @@ https://github.com/playa2021git/microbit-more-mini-scales
 
 5. プロジェクトを開き、micro:bit V2へ書き込む
 
-Microbit MoreとNeoPixel拡張を含むため、初回コンパイルには時間がかかる場合があります。
+Microbit Moreを含むため、初回コンパイルには時間がかかる場合があります。
+
+## BluetoothとWS2812の互換処理
+
+Microsoft公式の`pxt-neopixel`拡張機能は、Bluetoothを無効化する設定を含みます。そのため、Bluetoothを有効にするMicrobit Moreと同時に追加するとMakeCodeで設定競合が発生します。
+
+本プロジェクトでは`pxt-neopixel`を依存関係に追加せず、MakeCode本体に内蔵された`light::sendWS2812Buffer`を`ws2812-compatible.ts`から直接呼び出します。これにより、Microbit MoreのBluetooth／USB通信設定を維持したままLEDへデータを送信します。
 
 ## Stretch3との通信仕様
 
@@ -63,7 +69,7 @@ Stretch3から次のデータを送信します。
 |---|---|---|
 | `status` | 文字列 | `tared` |
 
-### NeoPixelの点灯数
+### LEDの点灯数
 
 Stretch3から、点灯させるLED数を次のラベルで送信します。
 
@@ -89,19 +95,20 @@ micro:bitへデータ「点灯数」にラベル「leds」を付けて送る
 
 ## 更新周期
 
-重量は200ms間隔、1秒間に約5回送信します。NeoPixelはStretch3から`leds`を受信したときだけ更新します。
+重量は200ms間隔、1秒間に約5回送信します。LEDはStretch3から`leds`を受信したときだけ更新します。
 
 ## 使用している拡張機能
 
 - [Microbit More v2 MakeCode Extension](https://github.com/microbit-more/pxt-mbit-more-v2)
 - [pxt-mini-scales](https://github.com/playa2021git/pxt-mini-scales)
-- [Microsoft pxt-neopixel](https://github.com/microsoft/pxt-neopixel)
+
+WS2812送信部分は、このリポジトリ内の`ws2812-compatible.ts`に実装しています。
 
 ## 注意
 
-- MakeCodeシミュレーターでは実際の重量やNeoPixelを確認できません。
+- MakeCodeシミュレーターでは実際の重量やLEDを確認できません。
 - micro:bit V1ではなく、micro:bit V2での使用を前提としています。
-- P0はNeoPixel専用として扱い、Stretch3から通常のデジタル出力・アナログ出力・サーボ制御には使用しないでください。
+- P0はLED専用として扱い、Stretch3から通常のデジタル出力・アナログ出力・サーボ制御には使用しないでください。
 - LEDのちらつき、micro:bitの再起動、重量値の乱れが起きる場合は電力不足を疑ってください。
 - 現段階ではStretch3に専用ブロックを追加していません。Microbit Moreのラベル付きデータ送受信ブロックを使用します。
 
