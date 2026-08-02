@@ -1,7 +1,7 @@
 {
-  "name": "microbit-more-mini-scales",
-  "version": "0.2.1",
-  "description": "Bridge firmware for using M5Stack Unit Mini Scales and WS2812/NeoPixel LEDs from Stretch3 via Microbit More.",
+  "name": "microbit-more-mini-scales-ws2812",
+  "version": "0.2.2",
+  "description": "Bluetooth-compatible WS2812 bridge for M5Stack Unit Mini Scales and Stretch3 via Microbit More.",
   "license": "MIT",
   "dependencies": {
     "core": "*",
