@@ -1,18 +1,26 @@
 # Microbit More Mini Scales
 
-M5Stack Unit Mini Scalesを、BBC micro:bit V2とMicrobit Moreを経由してStretch3から利用するためのブリッジ用MakeCodeプロジェクトです。
+M5Stack Unit Mini ScalesとNeoPixel LEDを、BBC micro:bit V2とMicrobit Moreを経由してStretch3から利用するためのブリッジ用MakeCodeプロジェクトです。
 
 ## 構成
 
 - BBC micro:bit V2
 - Seeed Studio Grove Shield for micro:bit v2.0
 - M5Stack Unit Mini Scales
+- Groveコネクタ対応NeoPixel 30LED
 - Stretch3
 - Microbit More
 
-Mini ScalesはGrove Shieldの **I2C端子** に接続します。
+## 接続
 
-> Mini Scalesは5V給電を必要とします。使用するシールドと給電方法の仕様を確認してください。
+| 機器 | Grove Shieldの端子 |
+|---|---|
+| M5Stack Unit Mini Scales | I2C端子 |
+| NeoPixel 30LED | P0/P14端子 |
+
+NeoPixelの信号線にはP0を使用します。P14はこのプログラムでは使用しません。
+
+> Mini ScalesとNeoPixelには安定した給電が必要です。このプログラムではNeoPixelの明るさを25/255（約10％）に制限しています。
 
 ## MakeCodeへの読み込み
 
@@ -27,7 +35,7 @@ https://github.com/playa2021git/microbit-more-mini-scales
 
 5. プロジェクトを開き、micro:bit V2へ書き込む
 
-Microbit Moreを含むため、初回コンパイルには時間がかかる場合があります。
+Microbit MoreとNeoPixel拡張を含むため、初回コンパイルには時間がかかる場合があります。
 
 ## Stretch3との通信仕様
 
@@ -55,20 +63,47 @@ Stretch3から次のデータを送信します。
 |---|---|---|
 | `status` | 文字列 | `tared` |
 
+### NeoPixelの点灯数
+
+Stretch3から、点灯させるLED数を次のラベルで送信します。
+
+| ラベル | データ型 | 内容 |
+|---|---|---|
+| `leds` | 数値 | 先頭から点灯させるLED数（0～30） |
+
+受信した値は小数点以下を切り捨て、0未満は0、30を超える値は30として処理します。LEDは緑色で点灯します。
+
+10g増えるごとに1個点灯させる場合、Stretch3側で次のように計算します。
+
+```text
+点灯数 = 重さ ÷ 10 の切り下げ
+```
+
+計算した点灯数を、Microbit Moreの送信ブロックで次のように送ります。
+
+```text
+micro:bitへデータ「点灯数」にラベル「leds」を付けて送る
+```
+
+同じ点灯数を繰り返し送らないように、「前回の点灯数」と異なる場合だけ送信する方法を推奨します。
+
 ## 更新周期
 
-重量は200ms間隔、1秒間に約5回送信します。
+重量は200ms間隔、1秒間に約5回送信します。NeoPixelはStretch3から`leds`を受信したときだけ更新します。
 
 ## 使用している拡張機能
 
 - [Microbit More v2 MakeCode Extension](https://github.com/microbit-more/pxt-mbit-more-v2)
 - [pxt-mini-scales](https://github.com/playa2021git/pxt-mini-scales)
+- [Microsoft pxt-neopixel](https://github.com/microsoft/pxt-neopixel)
 
 ## 注意
 
-- MakeCodeシミュレーターでは実際の重量を取得できません。
+- MakeCodeシミュレーターでは実際の重量やNeoPixelを確認できません。
 - micro:bit V1ではなく、micro:bit V2での使用を前提としています。
-- 現段階ではStretch3に専用のMini Scaleブロックを追加していません。Microbit Moreのラベル付きデータ送受信ブロックを使用します。
+- P0はNeoPixel専用として扱い、Stretch3から通常のデジタル出力・アナログ出力・サーボ制御には使用しないでください。
+- LEDのちらつき、micro:bitの再起動、重量値の乱れが起きる場合は電力不足を疑ってください。
+- 現段階ではStretch3に専用ブロックを追加していません。Microbit Moreのラベル付きデータ送受信ブロックを使用します。
 
 ## License
 
