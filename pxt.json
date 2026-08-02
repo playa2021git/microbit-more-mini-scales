@@ -1,0 +1,18 @@
+{
+  "name": "microbit-more-mini-scales",
+  "version": "0.1.0",
+  "description": "Bridge firmware for using M5Stack Unit Mini Scales from Stretch3 via Microbit More.",
+  "license": "MIT",
+  "dependencies": {
+    "core": "*",
+    "pxt-mbit-more-v2": "github:microbit-more/pxt-mbit-more-v2",
+    "mini-scales": "github:playa2021git/pxt-mini-scales"
+  },
+  "files": [
+    "main.ts"
+  ],
+  "supportedTargets": [
+    "microbit"
+  ],
+  "preferredEditor": "tsprj"
+}
